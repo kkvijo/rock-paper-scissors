@@ -1,0 +1,497 @@
+/* =========================================================
+   DOJO DUEL — Rock / Paper / Scissors
+   Design language: ink & brass dojo seals.
+   Each choice is stamped like a wax/ink seal (mon).
+   ========================================================= */
+
+/* ---------- Design tokens ---------- */
+:root{
+  /* Dark theme (default) */
+  --ink:        #14131f;
+  --ink-soft:   #1c1a2b;
+  --ink-plate:  #221f34;
+  --hairline:   rgba(234, 230, 218, 0.10);
+
+  --brass:       #d4a537;
+  --brass-light: #f0c869;
+  --brass-dim:   rgba(212, 165, 55, 0.18);
+
+  --stone:  #a88a63;
+  --paper:  #ece3cc;
+  --blade:  #7fb8cf;
+
+  --win:  #5fd98a;
+  --lose: #f2685c;
+  --draw: #f0c245;
+
+  --text:      #eee9db;
+  --text-dim:  #9a9484;
+  --text-faint:#6b654f;
+
+  --shadow: 0 20px 50px rgba(0,0,0,0.45);
+  --radius-lg: 28px;
+  --radius-md: 18px;
+  --radius-sm: 10px;
+}
+
+[data-theme="light"]{
+  --ink:        #f3ede0;
+  --ink-soft:   #ffffff;
+  --ink-plate:  #fbf7ec;
+  --hairline:   rgba(30, 25, 15, 0.10);
+
+  --brass:       #b1791e;
+  --brass-light: #8a5c12;
+  --brass-dim:   rgba(177, 121, 30, 0.14);
+
+  --stone: #8a6f4d;
+  --paper: #6b6350;
+  --blade: #2f7896;
+
+  --text:       #241f14;
+  --text-dim:   #6b6250;
+  --text-faint: #948a72;
+
+  --shadow: 0 16px 40px rgba(60, 45, 20, 0.15);
+}
+
+*{ box-sizing: border-box; }
+
+html, body{
+  margin:0;
+  padding:0;
+  min-height:100vh;
+  background: var(--ink);
+  color: var(--text);
+  font-family: "Sora", system-ui, sans-serif;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* subtle film-grain / vignette texture over the whole app */
+.grain{
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 20% 10%, var(--brass-dim), transparent 45%),
+    radial-gradient(circle at 85% 90%, var(--brass-dim), transparent 40%);
+  opacity: 0.7;
+}
+
+.app{
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ---------- Header ---------- */
+.header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-mark{
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid var(--brass);
+  color: var(--brass);
+  font-size: 22px;
+  font-weight: 700;
+  background: var(--brass-dim);
+}
+
+.brand-text h1{
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(28px, 6vw, 38px);
+  letter-spacing: 0.06em;
+  margin: 0;
+  line-height: 1;
+  color: var(--text);
+}
+
+.brand-text p{
+  margin: 4px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.header-actions{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.streak-badge{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ink-plate);
+  border: 1px solid var(--hairline);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: var(--shadow);
+}
+
+.streak-flame{
+  filter: grayscale(1);
+  opacity: 0.4;
+  transition: filter 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+}
+
+.streak-badge.active .streak-flame{
+  filter: grayscale(0);
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.theme-toggle{
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--hairline);
+  background: var(--ink-plate);
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.theme-toggle:hover{ transform: rotate(20deg) scale(1.08); }
+
+/* ---------- Scoreboard ---------- */
+.scoreboard{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.stat-plate{
+  background: var(--ink-soft);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: 16px 10px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-plate.you{ border-top: 3px solid var(--win); }
+.stat-plate.draws{ border-top: 3px solid var(--draw); }
+.stat-plate.cpu{ border-top: 3px solid var(--lose); }
+
+.stat-label{
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.stat-value{
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 34px;
+  letter-spacing: 0.03em;
+}
+
+.best-score{
+  text-align: center;
+  margin: -16px 0 0;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.best-score strong{ color: var(--brass); }
+
+/* ---------- Arena ---------- */
+.arena{
+  background: var(--ink-soft);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  padding: 36px 24px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  min-height: 300px;
+  justify-content: center;
+}
+
+/* ----- Seals (shared shape for choices + reveal) ----- */
+.seal{
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 38px;
+  border: 3px solid var(--hairline);
+  background: var(--ink-plate);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, filter 0.4s ease;
+}
+
+.seal--rock{ border-color: color-mix(in srgb, var(--stone) 60%, var(--hairline)); }
+.seal--paper{ border-color: color-mix(in srgb, var(--paper) 60%, var(--hairline)); }
+.seal--scissors{ border-color: color-mix(in srgb, var(--blade) 60%, var(--hairline)); }
+
+.seal--big{
+  width: 116px;
+  height: 116px;
+  font-size: 52px;
+}
+
+/* ----- Choice stage ----- */
+.choice-stage{
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.choice-btn{
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.choice-btn:hover .seal,
+.choice-btn:focus-visible .seal{
+  transform: translateY(-8px) scale(1.06);
+  box-shadow: 0 14px 26px rgba(0,0,0,0.35);
+}
+
+.choice-btn:hover .seal--rock{ border-color: var(--stone); }
+.choice-btn:hover .seal--paper{ border-color: var(--paper); }
+.choice-btn:hover .seal--scissors{ border-color: var(--blade); }
+
+.choice-btn:active .seal{ transform: translateY(-2px) scale(0.97); }
+
+.choice-label{
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.choice-btn kbd{
+  font-size: 10px;
+  color: var(--text-faint);
+  border: 1px solid var(--hairline);
+  border-radius: 5px;
+  padding: 1px 6px;
+}
+
+/* ----- Reveal stage ----- */
+.reveal-stage{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.reveal-side{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.reveal-tag{
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* pop-in animation when a seal is revealed */
+@keyframes sealDrop{
+  0%   { opacity: 0; transform: scale(0.4) rotate(-25deg); }
+  60%  { opacity: 1; transform: scale(1.12) rotate(6deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+.seal.revealing{ animation: sealDrop 0.55s cubic-bezier(.2,.9,.25,1.2); }
+
+.seal.win{
+  border-color: var(--brass);
+  box-shadow: 0 0 0 6px var(--brass-dim), 0 0 30px rgba(212,165,55,0.5);
+}
+
+.seal.lose{
+  filter: grayscale(0.85) brightness(0.6);
+}
+
+.vs-core{
+  position: relative;
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.vs-text{
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 20px;
+  color: var(--brass);
+  letter-spacing: 0.05em;
+  z-index: 2;
+}
+
+.shockwave{
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--brass);
+  opacity: 0;
+}
+
+.shockwave.pulse{
+  animation: shockwavePulse 0.7s ease-out;
+}
+
+@keyframes shockwavePulse{
+  0%   { opacity: 0.9; transform: scale(0.3); }
+  100% { opacity: 0; transform: scale(4.5); }
+}
+
+/* ----- Result message ----- */
+.result-message{
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(26px, 6vw, 34px);
+  letter-spacing: 0.04em;
+  margin: 0;
+  min-height: 1.2em;
+  text-align: center;
+}
+
+.result-message.win{ color: var(--win); }
+.result-message.lose{ color: var(--lose); }
+.result-message.draw{ color: var(--draw); }
+
+@keyframes messagePop{
+  0%   { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.result-message.show{ animation: messagePop 0.35s ease; }
+
+/* ---------- Buttons ---------- */
+.controls{
+  display: flex;
+  justify-content: center;
+}
+
+.btn{
+  font-family: "Sora", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  padding: 13px 30px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.btn:active{ transform: scale(0.96); }
+
+.btn-primary{
+  background: linear-gradient(135deg, var(--brass-light), var(--brass));
+  color: #201804;
+  box-shadow: 0 10px 24px rgba(212, 165, 55, 0.3);
+}
+
+.btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 14px 30px rgba(212,165,55,0.4); }
+
+.btn-ghost{
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--hairline);
+}
+
+.btn-ghost:hover{ color: var(--text); border-color: var(--brass); }
+
+/* ---------- Footer ---------- */
+.footer{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.hint{
+  font-size: 12px;
+  color: var(--text-faint);
+  margin: 0;
+}
+
+.hint kbd{
+  border: 1px solid var(--hairline);
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-size: 11px;
+}
+
+/* ---------- Confetti canvas ---------- */
+#confettiCanvas{
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 480px){
+  .seal{ width: 70px; height: 70px; font-size: 30px; }
+  .seal--big{ width: 92px; height: 92px; font-size: 40px; }
+  .choice-stage{ gap: 12px; }
+  .reveal-stage{ gap: 10px; }
+  .vs-core{ width: 40px; height: 40px; }
+  .vs-text{ font-size: 15px; }
+  .brand-mark{ width: 44px; height: 44px; font-size: 18px; }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+}
+
+/* ---------- Focus visibility ---------- */
+button:focus-visible{
+  outline: 2px solid var(--brass);
+  outline-offset: 3px;
+}

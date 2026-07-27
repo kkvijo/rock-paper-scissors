@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dojo Duel — Rock Paper Scissors</title>
+
+<!-- Display face for banners, body face for UI -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="dark">
+
+  <!-- Ambient background texture -->
+  <div class="grain"></div>
+
+  <div class="app">
+
+    <!-- ============ HEADER ============ -->
+    <header class="header">
+      <div class="brand">
+        <span class="brand-mark">組</span>
+        <div class="brand-text">
+          <h1>DOJO DUEL</h1>
+          <p>rock &nbsp;·&nbsp; paper &nbsp;·&nbsp; scissors</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="streak-badge" id="streakBadge" title="Current winning streak">
+          <span class="streak-flame">🔥</span>
+          <span id="streakCount">0</span>
+        </div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark and light mode">
+          <span id="themeIcon">☀️</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ============ SCOREBOARD ============ -->
+    <section class="scoreboard" aria-label="Scoreboard">
+      <div class="stat-plate you">
+        <span class="stat-label">You</span>
+        <span class="stat-value" id="playerScore">0</span>
+      </div>
+      <div class="stat-plate draws">
+        <span class="stat-label">Draws</span>
+        <span class="stat-value" id="drawScore">0</span>
+      </div>
+      <div class="stat-plate cpu">
+        <span class="stat-label">Dojo AI</span>
+        <span class="stat-value" id="computerScore">0</span>
+      </div>
+    </section>
+
+    <p class="best-score">Best win streak: <strong id="bestStreak">0</strong></p>
+
+    <!-- ============ ARENA ============ -->
+    <main class="arena">
+
+      <!-- Reveal stage: shown after a choice is made -->
+      <div class="reveal-stage" id="revealStage" hidden>
+        <div class="reveal-side">
+          <span class="reveal-tag">You</span>
+          <div class="seal seal--big" id="playerSeal"></div>
+        </div>
+
+        <div class="vs-core" id="vsCore">
+          <span class="vs-text">VS</span>
+          <div class="shockwave" id="shockwave"></div>
+        </div>
+
+        <div class="reveal-side">
+          <span class="reveal-tag">Dojo AI</span>
+          <div class="seal seal--big" id="computerSeal"></div>
+        </div>
+      </div>
+
+      <p class="result-message" id="resultMessage" aria-live="polite"></p>
+
+      <!-- Choice stage: the three picks -->
+      <div class="choice-stage" id="choiceStage">
+        <button class="choice-btn" data-choice="rock" title="Press R">
+          <span class="seal seal--rock"><span class="seal-icon">🪨</span></span>
+          <span class="choice-label">Rock</span>
+          <kbd>R</kbd>
+        </button>
+        <button class="choice-btn" data-choice="paper" title="Press P">
+          <span class="seal seal--paper"><span class="seal-icon">📄</span></span>
+          <span class="choice-label">Paper</span>
+          <kbd>P</kbd>
+        </button>
+        <button class="choice-btn" data-choice="scissors" title="Press S">
+          <span class="seal seal--scissors"><span class="seal-icon">✂️</span></span>
+          <span class="choice-label">Scissors</span>
+          <kbd>S</kbd>
+        </button>
+      </div>
+
+      <!-- Post-round controls -->
+      <div class="controls" id="postControls" hidden>
+        <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
+      </div>
+
+    </main>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="footer">
+      <button class="btn btn-ghost" id="resetScoreBtn">Reset Score</button>
+      <p class="hint">Keyboard shortcuts: <kbd>R</kbd> Rock &nbsp; <kbd>P</kbd> Paper &nbsp; <kbd>S</kbd> Scissors</p>
+    </footer>
+
+  </div>
+
+  <!-- Confetti canvas, drawn over everything on a win -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <script src="script.js"></script>
+</body>
+</html>
