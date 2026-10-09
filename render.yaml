@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: dojo-duel
+    runtime: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "1"
+      - key: NODE_VERSION
+        value: 22.18.0
